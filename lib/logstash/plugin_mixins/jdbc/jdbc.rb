@@ -241,12 +241,14 @@ module LogStash  module PluginMixins module Jdbc
     public
     def get_column_value(row)
       if !row.has_key?(@tracking_column.to_sym)
-        if !@tracking_column_warning_sent
+        if !row.dig(:document, @tracking_column).nil?
+              @sql_last_value = row.dig(:document, @tracking_column)
+        elsif !@tracking_column_warning_sent
           @logger.warn("tracking_column not found in dataset.", :tracking_column => @tracking_column)
           @tracking_column_warning_sent = true
         end
         # If we can't find the tracking column, return the current value in the ivar
-        @value_tracker.value
+        @sql_last_value
       else
         # Otherwise send the updated tracking column
         row[@tracking_column.to_sym]
